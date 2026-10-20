@@ -1,0 +1,139 @@
+@page "/checkins/edit/{Id:int}"
+@inject IDailyWellnessCheckInRepository CheckInRepository
+@inject IAthleteProfileRepository AthleteRepository
+@inject NavigationManager NavigationManager
+
+<PageTitle>Edit Check-in</PageTitle>
+
+<h1 class="mb-4">Edit Wellness Check-in</h1>
+
+@if (EditModel is null)
+{
+    <p>Check-in not found.</p>
+}
+else
+{
+    <EditForm FormName="edit-checkin" Model="EditModel" OnValidSubmit="UpdateCheckInAsync">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Athlete</label>
+                <InputSelect class="form-select" @bind-Value="EditModel.AthleteId">
+                    @foreach (var athlete in Athletes)
+                    {
+                        <option value="@athlete.Id">@athlete.Name</option>
+                    }
+                </InputSelect>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Date</label>
+                <InputDate class="form-control" @bind-Value="EditModel.Date" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Sleep Hours</label>
+                <InputNumber class="form-control" @bind-Value="EditModel.SleepHours" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Soreness Level</label>
+                <InputNumber class="form-control" @bind-Value="EditModel.SorenessLevel" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Mood</label>
+                <InputText class="form-control" @bind-Value="EditModel.Mood" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Readiness Score</label>
+                <InputNumber class="form-control" @bind-Value="EditModel.ReadinessScore" />
+            </div>
+        </div>
+        <div class="d-flex gap-2 mt-3">
+            <button class="btn btn-primary" type="submit">Save Changes</button>
+            <button class="btn btn-outline-danger" type="button" @onclick="DeleteCheckInAsync">Delete</button>
+            <a class="btn btn-secondary" href="/checkins">Back</a>
+        </div>
+    </EditForm>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private List<AthleteProfile> Athletes { get; set; } = [];
+
+    [SupplyParameterFromForm(FormName = "edit-checkin")]
+    private CheckInInput? EditModel { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        Athletes = await AthleteRepository.GetAllAsync();
+
+        if (EditModel is not null)
+        {
+            return;
+        }
+
+        var checkIn = await CheckInRepository.GetByIdAsync(Id);
+        if (checkIn is null)
+        {
+            return;
+        }
+
+        EditModel = new CheckInInput
+        {
+            AthleteId = checkIn.AthleteId,
+            Date = checkIn.Date,
+            SleepHours = checkIn.SleepHours,
+            SorenessLevel = checkIn.SorenessLevel,
+            Mood = checkIn.Mood,
+            ReadinessScore = checkIn.ReadinessScore
+        };
+    }
+
+    private async Task UpdateCheckInAsync()
+    {
+        if (EditModel is null)
+        {
+            return;
+        }
+
+        await CheckInRepository.UpdateAsync(new DailyWellnessCheckIn
+        {
+            Id = Id,
+            AthleteId = EditModel.AthleteId,
+            Date = EditModel.Date,
+            SleepHours = EditModel.SleepHours,
+            SorenessLevel = EditModel.SorenessLevel,
+            Mood = EditModel.Mood,
+            ReadinessScore = EditModel.ReadinessScore
+        });
+
+        NavigationManager.NavigateTo("/checkins");
+    }
+
+    private async Task DeleteCheckInAsync()
+    {
+        await CheckInRepository.DeleteAsync(Id);
+        NavigationManager.NavigateTo("/checkins");
+    }
+
+    private class CheckInInput
+    {
+        [Range(1, int.MaxValue)]
+        public int AthleteId { get; set; }
+
+        public DateTime Date { get; set; }
+
+        [Range(0, 24)]
+        public decimal SleepHours { get; set; }
+
+        [Range(1, 10)]
+        public int SorenessLevel { get; set; }
+
+        [Required, MaxLength(50)]
+        public string Mood { get; set; } = string.Empty;
+
+        [Range(1, 10)]
+        public int ReadinessScore { get; set; }
+    }
+}

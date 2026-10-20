@@ -1,0 +1,112 @@
+@page "/athletes/edit/{Id:int}"
+@inject IAthleteProfileRepository AthleteRepository
+@inject NavigationManager NavigationManager
+
+<PageTitle>Edit Athlete</PageTitle>
+
+<h1 class="mb-4">Edit Athlete</h1>
+
+@if (EditModel is null)
+{
+    <p>Athlete not found.</p>
+}
+else
+{
+    <EditForm FormName="edit-athlete" Model="EditModel" OnValidSubmit="UpdateAthleteAsync">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Name</label>
+                <InputText class="form-control" @bind-Value="EditModel.Name" />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">School</label>
+                <InputText class="form-control" @bind-Value="EditModel.School" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Graduation Year</label>
+                <InputNumber class="form-control" @bind-Value="EditModel.GraduationYear" />
+            </div>
+            <div class="col-md-8">
+                <label class="form-label">Primary Sport</label>
+                <InputText class="form-control" @bind-Value="EditModel.PrimarySport" />
+            </div>
+        </div>
+        <div class="d-flex gap-2 mt-3">
+            <button class="btn btn-primary" type="submit">Save Changes</button>
+            <button class="btn btn-outline-danger" type="button" @onclick="DeleteAthleteAsync">Delete</button>
+            <a class="btn btn-secondary" href="/athletes">Back</a>
+        </div>
+    </EditForm>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    [SupplyParameterFromForm(FormName = "edit-athlete")]
+    private AthleteInput? EditModel { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (EditModel is not null)
+        {
+            return;
+        }
+
+        var athlete = await AthleteRepository.GetByIdAsync(Id);
+        if (athlete is null)
+        {
+            return;
+        }
+
+        EditModel = new AthleteInput
+        {
+            Name = athlete.Name,
+            School = athlete.School,
+            GraduationYear = athlete.GraduationYear,
+            PrimarySport = athlete.PrimarySport
+        };
+    }
+
+    private async Task UpdateAthleteAsync()
+    {
+        if (EditModel is null)
+        {
+            return;
+        }
+
+        await AthleteRepository.UpdateAsync(new AthleteProfile
+        {
+            Id = Id,
+            Name = EditModel.Name,
+            School = EditModel.School,
+            GraduationYear = EditModel.GraduationYear,
+            PrimarySport = EditModel.PrimarySport
+        });
+
+        NavigationManager.NavigateTo("/athletes");
+    }
+
+    private async Task DeleteAthleteAsync()
+    {
+        await AthleteRepository.DeleteAsync(Id);
+        NavigationManager.NavigateTo("/athletes");
+    }
+
+    private class AthleteInput
+    {
+        [Required, MaxLength(100)]
+        public string Name { get; set; } = string.Empty;
+
+        [Required, MaxLength(100)]
+        public string School { get; set; } = string.Empty;
+
+        [Range(1900, 3000)]
+        public int GraduationYear { get; set; }
+
+        [Required, MaxLength(100)]
+        public string PrimarySport { get; set; } = string.Empty;
+    }
+}

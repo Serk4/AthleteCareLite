@@ -1,0 +1,106 @@
+@page "/athletes"
+@inject IAthleteProfileRepository AthleteRepository
+
+<PageTitle>Athletes</PageTitle>
+
+<h1 class="mb-4">Athlete Profiles</h1>
+
+<div class="card mb-4">
+    <div class="card-header">Add Athlete</div>
+    <div class="card-body">
+        <EditForm FormName="create-athlete" Model="CreateModel" OnValidSubmit="CreateAthleteAsync">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Name</label>
+                    <InputText class="form-control" @bind-Value="CreateModel.Name" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">School</label>
+                    <InputText class="form-control" @bind-Value="CreateModel.School" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Graduation Year</label>
+                    <InputNumber class="form-control" @bind-Value="CreateModel.GraduationYear" />
+                </div>
+                <div class="col-md-8">
+                    <label class="form-label">Primary Sport</label>
+                    <InputText class="form-control" @bind-Value="CreateModel.PrimarySport" />
+                </div>
+            </div>
+            <button class="btn btn-primary mt-3" type="submit">Save Athlete</button>
+        </EditForm>
+    </div>
+</div>
+
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>School</th>
+        <th>Graduation Year</th>
+        <th>Primary Sport</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var athlete in AthleteItems)
+    {
+        <tr>
+            <td>@athlete.Name</td>
+            <td>@athlete.School</td>
+            <td>@athlete.GraduationYear</td>
+            <td>@athlete.PrimarySport</td>
+            <td><a class="btn btn-sm btn-outline-secondary" href="/athletes/edit/@athlete.Id">Edit</a></td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+@code {
+    private List<AthleteProfile> AthleteItems { get; set; } = [];
+
+    [SupplyParameterFromForm(FormName = "create-athlete")]
+    private AthleteInput CreateModel { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAthletesAsync();
+    }
+
+    private async Task CreateAthleteAsync()
+    {
+        var athlete = new AthleteProfile
+        {
+            Name = CreateModel.Name,
+            School = CreateModel.School,
+            GraduationYear = CreateModel.GraduationYear,
+            PrimarySport = CreateModel.PrimarySport
+        };
+
+        await AthleteRepository.AddAsync(athlete);
+        CreateModel = new AthleteInput();
+        await LoadAthletesAsync();
+    }
+
+    private async Task LoadAthletesAsync()
+    {
+        AthleteItems = await AthleteRepository.GetAllAsync();
+    }
+
+    private class AthleteInput
+    {
+        [Required, MaxLength(100)]
+        public string Name { get; set; } = string.Empty;
+
+        [Required, MaxLength(100)]
+        public string School { get; set; } = string.Empty;
+
+        [Range(1900, 3000)]
+        public int GraduationYear { get; set; } = DateTime.UtcNow.Year;
+
+        [Required, MaxLength(100)]
+        public string PrimarySport { get; set; } = string.Empty;
+    }
+}

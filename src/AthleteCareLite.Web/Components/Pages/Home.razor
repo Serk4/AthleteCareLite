@@ -1,0 +1,79 @@
+@page "/"
+@inject IDailyWellnessCheckInRepository DailyWellnessCheckInRepository
+@inject ITrainingSessionLogRepository TrainingSessionLogRepository
+
+<PageTitle>Dashboard</PageTitle>
+
+<h1 class="mb-4">Dashboard</h1>
+
+@if (!string.IsNullOrWhiteSpace(LoadError))
+{
+    <div class="alert alert-warning">@LoadError</div>
+}
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">Recent Wellness Check-ins</div>
+            <div class="card-body">
+                @if (RecentCheckIns.Count == 0)
+                {
+                    <p class="text-muted mb-0">No check-ins yet.</p>
+                }
+                else
+                {
+                    <ul class="list-group list-group-flush">
+                        @foreach (var checkIn in RecentCheckIns)
+                        {
+                            <li class="list-group-item px-0">
+                                <strong>@checkIn.Athlete?.Name</strong> · @checkIn.Date.ToString("yyyy-MM-dd") · Readiness @checkIn.ReadinessScore
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">Recent Training Logs</div>
+            <div class="card-body">
+                @if (RecentTrainingLogs.Count == 0)
+                {
+                    <p class="text-muted mb-0">No training logs yet.</p>
+                }
+                else
+                {
+                    <ul class="list-group list-group-flush">
+                        @foreach (var log in RecentTrainingLogs)
+                        {
+                            <li class="list-group-item px-0">
+                                <strong>@log.Athlete?.Name</strong> · @log.Date.ToString("yyyy-MM-dd") · @log.Activity (@log.DurationMinutes min)
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<DailyWellnessCheckIn> RecentCheckIns { get; set; } = [];
+    private List<TrainingSessionLog> RecentTrainingLogs { get; set; } = [];
+    private string? LoadError { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            RecentCheckIns = await DailyWellnessCheckInRepository.GetRecentAsync(5);
+            RecentTrainingLogs = await TrainingSessionLogRepository.GetRecentAsync(5);
+        }
+        catch
+        {
+            LoadError = "Dashboard data is unavailable until a SQL Server connection is configured.";
+        }
+    }
+}

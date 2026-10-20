@@ -1,0 +1,112 @@
+@page "/coach-notes/edit/{Id:int}"
+@inject ICoachNoteRepository CoachNoteRepository
+@inject IAthleteProfileRepository AthleteRepository
+@inject NavigationManager NavigationManager
+
+<PageTitle>Edit Coach Note</PageTitle>
+
+<h1 class="mb-4">Edit Coach Note</h1>
+
+@if (EditModel is null)
+{
+    <p>Coach note not found.</p>
+}
+else
+{
+    <EditForm FormName="edit-coach-note" Model="EditModel" OnValidSubmit="UpdateCoachNoteAsync">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Athlete</label>
+                <InputSelect class="form-select" @bind-Value="EditModel.AthleteId">
+                    @foreach (var athlete in Athletes)
+                    {
+                        <option value="@athlete.Id">@athlete.Name</option>
+                    }
+                </InputSelect>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Date</label>
+                <InputDate class="form-control" @bind-Value="EditModel.Date" />
+            </div>
+            <div class="col-md-12">
+                <label class="form-label">Note</label>
+                <InputText class="form-control" @bind-Value="EditModel.NoteText" />
+            </div>
+        </div>
+        <div class="d-flex gap-2 mt-3">
+            <button class="btn btn-primary" type="submit">Save Changes</button>
+            <button class="btn btn-outline-danger" type="button" @onclick="DeleteCoachNoteAsync">Delete</button>
+            <a class="btn btn-secondary" href="/coach-notes">Back</a>
+        </div>
+    </EditForm>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private List<AthleteProfile> Athletes { get; set; } = [];
+
+    [SupplyParameterFromForm(FormName = "edit-coach-note")]
+    private CoachNoteInput? EditModel { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        Athletes = await AthleteRepository.GetAllAsync();
+
+        if (EditModel is not null)
+        {
+            return;
+        }
+
+        var note = await CoachNoteRepository.GetByIdAsync(Id);
+        if (note is null)
+        {
+            return;
+        }
+
+        EditModel = new CoachNoteInput
+        {
+            AthleteId = note.AthleteId,
+            Date = note.Date,
+            NoteText = note.NoteText
+        };
+    }
+
+    private async Task UpdateCoachNoteAsync()
+    {
+        if (EditModel is null)
+        {
+            return;
+        }
+
+        await CoachNoteRepository.UpdateAsync(new CoachNote
+        {
+            Id = Id,
+            AthleteId = EditModel.AthleteId,
+            Date = EditModel.Date,
+            NoteText = EditModel.NoteText
+        });
+
+        NavigationManager.NavigateTo("/coach-notes");
+    }
+
+    private async Task DeleteCoachNoteAsync()
+    {
+        await CoachNoteRepository.DeleteAsync(Id);
+        NavigationManager.NavigateTo("/coach-notes");
+    }
+
+    private class CoachNoteInput
+    {
+        [Range(1, int.MaxValue)]
+        public int AthleteId { get; set; }
+
+        public DateTime Date { get; set; }
+
+        [Required, MaxLength(1000)]
+        public string NoteText { get; set; } = string.Empty;
+    }
+}

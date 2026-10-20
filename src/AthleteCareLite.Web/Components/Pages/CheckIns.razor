@@ -1,0 +1,146 @@
+@page "/checkins"
+@inject IDailyWellnessCheckInRepository CheckInRepository
+@inject IAthleteProfileRepository AthleteRepository
+
+<PageTitle>Wellness Check-ins</PageTitle>
+
+<h1 class="mb-4">Daily Wellness Check-ins</h1>
+
+@if (Athletes.Count == 0)
+{
+    <div class="alert alert-info">Add an athlete first to create check-ins.</div>
+}
+else
+{
+    <div class="card mb-4">
+        <div class="card-header">Add Check-in</div>
+        <div class="card-body">
+            <EditForm FormName="create-checkin" Model="CreateModel" OnValidSubmit="CreateCheckInAsync">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Athlete</label>
+                        <InputSelect class="form-select" @bind-Value="CreateModel.AthleteId">
+                            @foreach (var athlete in Athletes)
+                            {
+                                <option value="@athlete.Id">@athlete.Name</option>
+                            }
+                        </InputSelect>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Date</label>
+                        <InputDate class="form-control" @bind-Value="CreateModel.Date" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Sleep Hours</label>
+                        <InputNumber class="form-control" @bind-Value="CreateModel.SleepHours" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Soreness Level</label>
+                        <InputNumber class="form-control" @bind-Value="CreateModel.SorenessLevel" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Mood</label>
+                        <InputText class="form-control" @bind-Value="CreateModel.Mood" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Readiness Score</label>
+                        <InputNumber class="form-control" @bind-Value="CreateModel.ReadinessScore" />
+                    </div>
+                </div>
+                <button class="btn btn-primary mt-3" type="submit">Save Check-in</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Athlete</th>
+        <th>Date</th>
+        <th>Sleep</th>
+        <th>Soreness</th>
+        <th>Mood</th>
+        <th>Readiness</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var checkIn in CheckInItems)
+    {
+        <tr>
+            <td>@checkIn.Athlete?.Name</td>
+            <td>@checkIn.Date.ToString("yyyy-MM-dd")</td>
+            <td>@checkIn.SleepHours</td>
+            <td>@checkIn.SorenessLevel</td>
+            <td>@checkIn.Mood</td>
+            <td>@checkIn.ReadinessScore</td>
+            <td><a class="btn btn-sm btn-outline-secondary" href="/checkins/edit/@checkIn.Id">Edit</a></td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+@code {
+    private List<DailyWellnessCheckIn> CheckInItems { get; set; } = [];
+    private List<AthleteProfile> Athletes { get; set; } = [];
+
+    [SupplyParameterFromForm(FormName = "create-checkin")]
+    private CheckInInput CreateModel { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDataAsync();
+    }
+
+    private async Task CreateCheckInAsync()
+    {
+        await CheckInRepository.AddAsync(new DailyWellnessCheckIn
+        {
+            AthleteId = CreateModel.AthleteId,
+            Date = CreateModel.Date,
+            SleepHours = CreateModel.SleepHours,
+            SorenessLevel = CreateModel.SorenessLevel,
+            Mood = CreateModel.Mood,
+            ReadinessScore = CreateModel.ReadinessScore
+        });
+
+        CreateModel = CreateDefaultInput();
+        await LoadDataAsync();
+    }
+
+    private async Task LoadDataAsync()
+    {
+        Athletes = await AthleteRepository.GetAllAsync();
+        CheckInItems = await CheckInRepository.GetAllAsync();
+
+        if (CreateModel.AthleteId == 0 && Athletes.Count > 0)
+        {
+            CreateModel.AthleteId = Athletes[0].Id;
+        }
+    }
+
+    private static CheckInInput CreateDefaultInput() => new();
+
+    private class CheckInInput
+    {
+        [Range(1, int.MaxValue)]
+        public int AthleteId { get; set; }
+
+        public DateTime Date { get; set; } = DateTime.UtcNow.Date;
+
+        [Range(0, 24)]
+        public decimal SleepHours { get; set; }
+
+        [Range(1, 10)]
+        public int SorenessLevel { get; set; }
+
+        [Required, MaxLength(50)]
+        public string Mood { get; set; } = string.Empty;
+
+        [Range(1, 10)]
+        public int ReadinessScore { get; set; }
+    }
+}

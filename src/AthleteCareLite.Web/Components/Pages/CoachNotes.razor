@@ -1,0 +1,114 @@
+@page "/coach-notes"
+@inject ICoachNoteRepository CoachNoteRepository
+@inject IAthleteProfileRepository AthleteRepository
+
+<PageTitle>Coach Notes</PageTitle>
+
+<h1 class="mb-4">Coach Notes</h1>
+
+@if (Athletes.Count == 0)
+{
+    <div class="alert alert-info">Add an athlete first to create coach notes.</div>
+}
+else
+{
+    <div class="card mb-4">
+        <div class="card-header">Add Coach Note</div>
+        <div class="card-body">
+            <EditForm FormName="create-coach-note" Model="CreateModel" OnValidSubmit="CreateCoachNoteAsync">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Athlete</label>
+                        <InputSelect class="form-select" @bind-Value="CreateModel.AthleteId">
+                            @foreach (var athlete in Athletes)
+                            {
+                                <option value="@athlete.Id">@athlete.Name</option>
+                            }
+                        </InputSelect>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Date</label>
+                        <InputDate class="form-control" @bind-Value="CreateModel.Date" />
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label">Note</label>
+                        <InputText class="form-control" @bind-Value="CreateModel.NoteText" />
+                    </div>
+                </div>
+                <button class="btn btn-primary mt-3" type="submit">Save Note</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Athlete</th>
+        <th>Date</th>
+        <th>Note</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var note in CoachNotesList)
+    {
+        <tr>
+            <td>@note.Athlete?.Name</td>
+            <td>@note.Date.ToString("yyyy-MM-dd")</td>
+            <td>@note.NoteText</td>
+            <td><a class="btn btn-sm btn-outline-secondary" href="/coach-notes/edit/@note.Id">Edit</a></td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+@code {
+    private List<CoachNote> CoachNotesList { get; set; } = [];
+    private List<AthleteProfile> Athletes { get; set; } = [];
+
+    [SupplyParameterFromForm(FormName = "create-coach-note")]
+    private CoachNoteInput CreateModel { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDataAsync();
+    }
+
+    private async Task CreateCoachNoteAsync()
+    {
+        await CoachNoteRepository.AddAsync(new CoachNote
+        {
+            AthleteId = CreateModel.AthleteId,
+            Date = CreateModel.Date,
+            NoteText = CreateModel.NoteText
+        });
+
+        CreateModel = new CoachNoteInput();
+        await LoadDataAsync();
+    }
+
+    private async Task LoadDataAsync()
+    {
+        Athletes = await AthleteRepository.GetAllAsync();
+        CoachNotesList = await CoachNoteRepository.GetAllAsync();
+
+        if (CreateModel.AthleteId == 0 && Athletes.Count > 0)
+        {
+            CreateModel.AthleteId = Athletes[0].Id;
+        }
+    }
+
+    private class CoachNoteInput
+    {
+        [Range(1, int.MaxValue)]
+        public int AthleteId { get; set; }
+
+        public DateTime Date { get; set; } = DateTime.UtcNow.Date;
+
+        [Required, MaxLength(1000)]
+        public string NoteText { get; set; } = string.Empty;
+    }
+}

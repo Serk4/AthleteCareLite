@@ -1,0 +1,134 @@
+@page "/training-logs"
+@inject ITrainingSessionLogRepository TrainingSessionLogRepository
+@inject IAthleteProfileRepository AthleteRepository
+
+<PageTitle>Training Logs</PageTitle>
+
+<h1 class="mb-4">Training Session Logs</h1>
+
+@if (Athletes.Count == 0)
+{
+    <div class="alert alert-info">Add an athlete first to create training logs.</div>
+}
+else
+{
+    <div class="card mb-4">
+        <div class="card-header">Add Training Log</div>
+        <div class="card-body">
+            <EditForm FormName="create-training-log" Model="CreateModel" OnValidSubmit="CreateTrainingLogAsync">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Athlete</label>
+                        <InputSelect class="form-select" @bind-Value="CreateModel.AthleteId">
+                            @foreach (var athlete in Athletes)
+                            {
+                                <option value="@athlete.Id">@athlete.Name</option>
+                            }
+                        </InputSelect>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Date</label>
+                        <InputDate class="form-control" @bind-Value="CreateModel.Date" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Duration (minutes)</label>
+                        <InputNumber class="form-control" @bind-Value="CreateModel.DurationMinutes" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Activity</label>
+                        <InputText class="form-control" @bind-Value="CreateModel.Activity" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Notes</label>
+                        <InputText class="form-control" @bind-Value="CreateModel.Notes" />
+                    </div>
+                </div>
+                <button class="btn btn-primary mt-3" type="submit">Save Training Log</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Athlete</th>
+        <th>Date</th>
+        <th>Activity</th>
+        <th>Duration</th>
+        <th>Notes</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var log in TrainingLogItems)
+    {
+        <tr>
+            <td>@log.Athlete?.Name</td>
+            <td>@log.Date.ToString("yyyy-MM-dd")</td>
+            <td>@log.Activity</td>
+            <td>@log.DurationMinutes</td>
+            <td>@log.Notes</td>
+            <td><a class="btn btn-sm btn-outline-secondary" href="/training-logs/edit/@log.Id">Edit</a></td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+@code {
+    private List<TrainingSessionLog> TrainingLogItems { get; set; } = [];
+    private List<AthleteProfile> Athletes { get; set; } = [];
+
+    [SupplyParameterFromForm(FormName = "create-training-log")]
+    private TrainingLogInput CreateModel { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDataAsync();
+    }
+
+    private async Task CreateTrainingLogAsync()
+    {
+        await TrainingSessionLogRepository.AddAsync(new TrainingSessionLog
+        {
+            AthleteId = CreateModel.AthleteId,
+            Date = CreateModel.Date,
+            Activity = CreateModel.Activity,
+            DurationMinutes = CreateModel.DurationMinutes,
+            Notes = CreateModel.Notes
+        });
+
+        CreateModel = new TrainingLogInput();
+        await LoadDataAsync();
+    }
+
+    private async Task LoadDataAsync()
+    {
+        Athletes = await AthleteRepository.GetAllAsync();
+        TrainingLogItems = await TrainingSessionLogRepository.GetAllAsync();
+
+        if (CreateModel.AthleteId == 0 && Athletes.Count > 0)
+        {
+            CreateModel.AthleteId = Athletes[0].Id;
+        }
+    }
+
+    private class TrainingLogInput
+    {
+        [Range(1, int.MaxValue)]
+        public int AthleteId { get; set; }
+
+        public DateTime Date { get; set; } = DateTime.UtcNow.Date;
+
+        [Required, MaxLength(100)]
+        public string Activity { get; set; } = string.Empty;
+
+        [Range(1, 1440)]
+        public int DurationMinutes { get; set; }
+
+        [MaxLength(500)]
+        public string? Notes { get; set; }
+    }
+}

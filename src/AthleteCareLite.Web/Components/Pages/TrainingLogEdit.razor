@@ -1,0 +1,130 @@
+@page "/training-logs/edit/{Id:int}"
+@inject ITrainingSessionLogRepository TrainingSessionLogRepository
+@inject IAthleteProfileRepository AthleteRepository
+@inject NavigationManager NavigationManager
+
+<PageTitle>Edit Training Log</PageTitle>
+
+<h1 class="mb-4">Edit Training Log</h1>
+
+@if (EditModel is null)
+{
+    <p>Training log not found.</p>
+}
+else
+{
+    <EditForm FormName="edit-training-log" Model="EditModel" OnValidSubmit="UpdateTrainingLogAsync">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Athlete</label>
+                <InputSelect class="form-select" @bind-Value="EditModel.AthleteId">
+                    @foreach (var athlete in Athletes)
+                    {
+                        <option value="@athlete.Id">@athlete.Name</option>
+                    }
+                </InputSelect>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Date</label>
+                <InputDate class="form-control" @bind-Value="EditModel.Date" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Duration (minutes)</label>
+                <InputNumber class="form-control" @bind-Value="EditModel.DurationMinutes" />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Activity</label>
+                <InputText class="form-control" @bind-Value="EditModel.Activity" />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Notes</label>
+                <InputText class="form-control" @bind-Value="EditModel.Notes" />
+            </div>
+        </div>
+        <div class="d-flex gap-2 mt-3">
+            <button class="btn btn-primary" type="submit">Save Changes</button>
+            <button class="btn btn-outline-danger" type="button" @onclick="DeleteTrainingLogAsync">Delete</button>
+            <a class="btn btn-secondary" href="/training-logs">Back</a>
+        </div>
+    </EditForm>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private List<AthleteProfile> Athletes { get; set; } = [];
+
+    [SupplyParameterFromForm(FormName = "edit-training-log")]
+    private TrainingLogInput? EditModel { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        Athletes = await AthleteRepository.GetAllAsync();
+
+        if (EditModel is not null)
+        {
+            return;
+        }
+
+        var log = await TrainingSessionLogRepository.GetByIdAsync(Id);
+        if (log is null)
+        {
+            return;
+        }
+
+        EditModel = new TrainingLogInput
+        {
+            AthleteId = log.AthleteId,
+            Date = log.Date,
+            Activity = log.Activity,
+            DurationMinutes = log.DurationMinutes,
+            Notes = log.Notes
+        };
+    }
+
+    private async Task UpdateTrainingLogAsync()
+    {
+        if (EditModel is null)
+        {
+            return;
+        }
+
+        await TrainingSessionLogRepository.UpdateAsync(new TrainingSessionLog
+        {
+            Id = Id,
+            AthleteId = EditModel.AthleteId,
+            Date = EditModel.Date,
+            Activity = EditModel.Activity,
+            DurationMinutes = EditModel.DurationMinutes,
+            Notes = EditModel.Notes
+        });
+
+        NavigationManager.NavigateTo("/training-logs");
+    }
+
+    private async Task DeleteTrainingLogAsync()
+    {
+        await TrainingSessionLogRepository.DeleteAsync(Id);
+        NavigationManager.NavigateTo("/training-logs");
+    }
+
+    private class TrainingLogInput
+    {
+        [Range(1, int.MaxValue)]
+        public int AthleteId { get; set; }
+
+        public DateTime Date { get; set; }
+
+        [Required, MaxLength(100)]
+        public string Activity { get; set; } = string.Empty;
+
+        [Range(1, 1440)]
+        public int DurationMinutes { get; set; }
+
+        [MaxLength(500)]
+        public string? Notes { get; set; }
+    }
+}
