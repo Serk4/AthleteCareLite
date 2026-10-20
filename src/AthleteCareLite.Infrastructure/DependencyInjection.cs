@@ -12,7 +12,7 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection")
-                               ?? "Server=localhost;Database=AthleteCareLiteDb;Trusted_Connection=True;TrustServerCertificate=True;";
+                               ?? throw new InvalidOperationException("Connection string 'DefaultConnection' is required.");
 
         services.AddDbContext<AthleteCareLiteDbContext>(options => options.UseSqlServer(connectionString));
 

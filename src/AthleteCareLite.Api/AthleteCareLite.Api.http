@@ -1,6 +1,6 @@
 @AthleteCareLite.Api_HostAddress = http://localhost:5267
 
-GET {{AthleteCareLite.Api_HostAddress}}/weatherforecast/
+GET {{AthleteCareLite.Api_HostAddress}}/api/athletes
 Accept: application/json
 
 ###

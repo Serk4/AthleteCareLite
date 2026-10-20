@@ -17,10 +17,19 @@ public class EntityDefaultsTests
     [Fact]
     public void WellnessAndTrainingEntities_DefaultDates_AreUtcDate()
     {
-        var today = DateTime.UtcNow.Date;
+        var beforeWellness = DateTime.UtcNow.Date;
+        var wellnessCheckIn = new DailyWellnessCheckIn();
+        var afterWellness = DateTime.UtcNow.Date;
+        Assert.InRange(wellnessCheckIn.Date, beforeWellness, afterWellness);
 
-        Assert.Equal(today, new DailyWellnessCheckIn().Date);
-        Assert.Equal(today, new TrainingSessionLog().Date);
-        Assert.Equal(today, new CoachNote().Date);
+        var beforeTraining = DateTime.UtcNow.Date;
+        var trainingSessionLog = new TrainingSessionLog();
+        var afterTraining = DateTime.UtcNow.Date;
+        Assert.InRange(trainingSessionLog.Date, beforeTraining, afterTraining);
+
+        var beforeCoachNote = DateTime.UtcNow.Date;
+        var coachNote = new CoachNote();
+        var afterCoachNote = DateTime.UtcNow.Date;
+        Assert.InRange(coachNote.Date, beforeCoachNote, afterCoachNote);
     }
 }

@@ -25,17 +25,35 @@ api.MapGet("/athletes/{id:int}", async (int id, IAthleteProfileRepository reposi
     return athlete is null ? Results.NotFound() : Results.Ok(athlete);
 });
 
-api.MapPost("/athletes", async (AthleteProfile athlete, IAthleteProfileRepository repository, CancellationToken cancellationToken) =>
-    Results.Created($"/api/athletes/{athlete.Id}", await repository.AddAsync(athlete, cancellationToken)));
-
-api.MapPut("/athletes/{id:int}", async (int id, AthleteProfile athlete, IAthleteProfileRepository repository, CancellationToken cancellationToken) =>
+api.MapPost("/athletes", async (AthleteProfileUpsertRequest request, IAthleteProfileRepository repository, CancellationToken cancellationToken) =>
 {
-    if (id != athlete.Id)
+    var savedAthlete = await repository.AddAsync(new AthleteProfile
     {
-        return Results.BadRequest("Route id and payload id must match.");
+        Name = request.Name,
+        School = request.School,
+        GraduationYear = request.GraduationYear,
+        PrimarySport = request.PrimarySport
+    }, cancellationToken);
+    return Results.Created($"/api/athletes/{savedAthlete.Id}", savedAthlete);
+});
+
+api.MapPut("/athletes/{id:int}", async (int id, AthleteProfileUpsertRequest request, IAthleteProfileRepository repository, CancellationToken cancellationToken) =>
+{
+    var existing = await repository.GetByIdAsync(id, cancellationToken);
+    if (existing is null)
+    {
+        return Results.NotFound();
     }
 
-    await repository.UpdateAsync(athlete, cancellationToken);
+    await repository.UpdateAsync(new AthleteProfile
+    {
+        Id = id,
+        Name = request.Name,
+        School = request.School,
+        GraduationYear = request.GraduationYear,
+        PrimarySport = request.PrimarySport
+    }, cancellationToken);
+
     return Results.NoContent();
 });
 
@@ -54,17 +72,40 @@ api.MapGet("/wellness-checkins/{id:int}", async (int id, IDailyWellnessCheckInRe
     return checkIn is null ? Results.NotFound() : Results.Ok(checkIn);
 });
 
-api.MapPost("/wellness-checkins", async (DailyWellnessCheckIn checkIn, IDailyWellnessCheckInRepository repository, CancellationToken cancellationToken) =>
-    Results.Created($"/api/wellness-checkins/{checkIn.Id}", await repository.AddAsync(checkIn, cancellationToken)));
-
-api.MapPut("/wellness-checkins/{id:int}", async (int id, DailyWellnessCheckIn checkIn, IDailyWellnessCheckInRepository repository, CancellationToken cancellationToken) =>
+api.MapPost("/wellness-checkins", async (DailyWellnessCheckInUpsertRequest request, IDailyWellnessCheckInRepository repository, CancellationToken cancellationToken) =>
 {
-    if (id != checkIn.Id)
+    var savedCheckIn = await repository.AddAsync(new DailyWellnessCheckIn
     {
-        return Results.BadRequest("Route id and payload id must match.");
+        AthleteId = request.AthleteId,
+        Date = request.Date,
+        SleepHours = request.SleepHours,
+        SorenessLevel = request.SorenessLevel,
+        Mood = request.Mood,
+        ReadinessScore = request.ReadinessScore
+    }, cancellationToken);
+
+    return Results.Created($"/api/wellness-checkins/{savedCheckIn.Id}", savedCheckIn);
+});
+
+api.MapPut("/wellness-checkins/{id:int}", async (int id, DailyWellnessCheckInUpsertRequest request, IDailyWellnessCheckInRepository repository, CancellationToken cancellationToken) =>
+{
+    var existing = await repository.GetByIdAsync(id, cancellationToken);
+    if (existing is null)
+    {
+        return Results.NotFound();
     }
 
-    await repository.UpdateAsync(checkIn, cancellationToken);
+    await repository.UpdateAsync(new DailyWellnessCheckIn
+    {
+        Id = id,
+        AthleteId = request.AthleteId,
+        Date = request.Date,
+        SleepHours = request.SleepHours,
+        SorenessLevel = request.SorenessLevel,
+        Mood = request.Mood,
+        ReadinessScore = request.ReadinessScore
+    }, cancellationToken);
+
     return Results.NoContent();
 });
 
@@ -83,17 +124,38 @@ api.MapGet("/training-logs/{id:int}", async (int id, ITrainingSessionLogReposito
     return log is null ? Results.NotFound() : Results.Ok(log);
 });
 
-api.MapPost("/training-logs", async (TrainingSessionLog log, ITrainingSessionLogRepository repository, CancellationToken cancellationToken) =>
-    Results.Created($"/api/training-logs/{log.Id}", await repository.AddAsync(log, cancellationToken)));
-
-api.MapPut("/training-logs/{id:int}", async (int id, TrainingSessionLog log, ITrainingSessionLogRepository repository, CancellationToken cancellationToken) =>
+api.MapPost("/training-logs", async (TrainingSessionLogUpsertRequest request, ITrainingSessionLogRepository repository, CancellationToken cancellationToken) =>
 {
-    if (id != log.Id)
+    var savedLog = await repository.AddAsync(new TrainingSessionLog
     {
-        return Results.BadRequest("Route id and payload id must match.");
+        AthleteId = request.AthleteId,
+        Date = request.Date,
+        Activity = request.Activity,
+        DurationMinutes = request.DurationMinutes,
+        Notes = request.Notes
+    }, cancellationToken);
+
+    return Results.Created($"/api/training-logs/{savedLog.Id}", savedLog);
+});
+
+api.MapPut("/training-logs/{id:int}", async (int id, TrainingSessionLogUpsertRequest request, ITrainingSessionLogRepository repository, CancellationToken cancellationToken) =>
+{
+    var existing = await repository.GetByIdAsync(id, cancellationToken);
+    if (existing is null)
+    {
+        return Results.NotFound();
     }
 
-    await repository.UpdateAsync(log, cancellationToken);
+    await repository.UpdateAsync(new TrainingSessionLog
+    {
+        Id = id,
+        AthleteId = request.AthleteId,
+        Date = request.Date,
+        Activity = request.Activity,
+        DurationMinutes = request.DurationMinutes,
+        Notes = request.Notes
+    }, cancellationToken);
+
     return Results.NoContent();
 });
 
@@ -112,17 +174,34 @@ api.MapGet("/coach-notes/{id:int}", async (int id, ICoachNoteRepository reposito
     return note is null ? Results.NotFound() : Results.Ok(note);
 });
 
-api.MapPost("/coach-notes", async (CoachNote note, ICoachNoteRepository repository, CancellationToken cancellationToken) =>
-    Results.Created($"/api/coach-notes/{note.Id}", await repository.AddAsync(note, cancellationToken)));
-
-api.MapPut("/coach-notes/{id:int}", async (int id, CoachNote note, ICoachNoteRepository repository, CancellationToken cancellationToken) =>
+api.MapPost("/coach-notes", async (CoachNoteUpsertRequest request, ICoachNoteRepository repository, CancellationToken cancellationToken) =>
 {
-    if (id != note.Id)
+    var savedNote = await repository.AddAsync(new CoachNote
     {
-        return Results.BadRequest("Route id and payload id must match.");
+        AthleteId = request.AthleteId,
+        Date = request.Date,
+        NoteText = request.NoteText
+    }, cancellationToken);
+
+    return Results.Created($"/api/coach-notes/{savedNote.Id}", savedNote);
+});
+
+api.MapPut("/coach-notes/{id:int}", async (int id, CoachNoteUpsertRequest request, ICoachNoteRepository repository, CancellationToken cancellationToken) =>
+{
+    var existing = await repository.GetByIdAsync(id, cancellationToken);
+    if (existing is null)
+    {
+        return Results.NotFound();
     }
 
-    await repository.UpdateAsync(note, cancellationToken);
+    await repository.UpdateAsync(new CoachNote
+    {
+        Id = id,
+        AthleteId = request.AthleteId,
+        Date = request.Date,
+        NoteText = request.NoteText
+    }, cancellationToken);
+
     return Results.NoContent();
 });
 
@@ -133,3 +212,8 @@ api.MapDelete("/coach-notes/{id:int}", async (int id, ICoachNoteRepository repos
 });
 
 app.Run();
+
+public sealed record AthleteProfileUpsertRequest(string Name, string School, int GraduationYear, string PrimarySport);
+public sealed record DailyWellnessCheckInUpsertRequest(int AthleteId, DateTime Date, decimal SleepHours, int SorenessLevel, string Mood, int ReadinessScore);
+public sealed record TrainingSessionLogUpsertRequest(int AthleteId, DateTime Date, string Activity, int DurationMinutes, string? Notes);
+public sealed record CoachNoteUpsertRequest(int AthleteId, DateTime Date, string NoteText);
