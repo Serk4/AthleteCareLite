@@ -1,0 +1,12 @@
+C:\Users\david\source\repos\Serk4\AthleteCareLite\AthleteCareLite.Core\bin\Debug\net9.0\AthleteCareLite.Core.deps.json
+C:\Users\david\source\repos\Serk4\AthleteCareLite\AthleteCareLite.Core\bin\Debug\net9.0\AthleteCareLite.Core.dll
+C:\Users\david\source\repos\Serk4\AthleteCareLite\AthleteCareLite.Core\bin\Debug\net9.0\AthleteCareLite.Core.pdb
+C:\Users\david\source\repos\Serk4\AthleteCareLite\AthleteCareLite.Core\obj\Debug\net9.0\AthleteCareLite.Core.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\david\source\repos\Serk4\AthleteCareLite\AthleteCareLite.Core\obj\Debug\net9.0\AthleteCareLite.Core.AssemblyInfoInputs.cache
+C:\Users\david\source\repos\Serk4\AthleteCareLite\AthleteCareLite.Core\obj\Debug\net9.0\AthleteCareLite.Core.AssemblyInfo.cs
+C:\Users\david\source\repos\Serk4\AthleteCareLite\AthleteCareLite.Core\obj\Debug\net9.0\AthleteCareLite.Core.csproj.CoreCompileInputs.cache
+C:\Users\david\source\repos\Serk4\AthleteCareLite\AthleteCareLite.Core\obj\Debug\net9.0\AthleteCareLite.Core.sourcelink.json
+C:\Users\david\source\repos\Serk4\AthleteCareLite\AthleteCareLite.Core\obj\Debug\net9.0\AthleteCareLite.Core.dll
+C:\Users\david\source\repos\Serk4\AthleteCareLite\AthleteCareLite.Core\obj\Debug\net9.0\refint\AthleteCareLite.Core.dll
+C:\Users\david\source\repos\Serk4\AthleteCareLite\AthleteCareLite.Core\obj\Debug\net9.0\AthleteCareLite.Core.pdb
+C:\Users\david\source\repos\Serk4\AthleteCareLite\AthleteCareLite.Core\obj\Debug\net9.0\ref\AthleteCareLite.Core.dll

@@ -1,0 +1,31 @@
+@page "/training/new"
+@using AthleteCareLite.Core.Interfaces
+@using AthleteCareLite.Core.Models
+@inject ITrainingSessionRepository Repo
+@inject NavigationManager Nav
+@rendermode InteractiveServer
+
+<PageTitle>New Training Session</PageTitle>
+
+<div class="max-w-lg mx-auto">
+    <h1 class="text-2xl font-bold mb-6">New Training Session</h1>
+    <TrainingForm Session="session" OnSave="SaveAsync" CancelUrl="/training" />
+</div>
+
+@code {
+    [SupplyParameterFromQuery] public Guid? AthleteId { get; set; }
+
+    private TrainingSession session = new() { Date = DateOnly.FromDateTime(DateTime.Today) };
+
+    protected override void OnParametersSet()
+    {
+        if (AthleteId.HasValue)
+            session.AthleteId = AthleteId.Value;
+    }
+
+    private async Task SaveAsync()
+    {
+        await Repo.AddAsync(session);
+        Nav.NavigateTo("/training");
+    }
+}

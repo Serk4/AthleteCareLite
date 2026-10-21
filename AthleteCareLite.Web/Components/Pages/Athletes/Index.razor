@@ -1,0 +1,65 @@
+@page "/athletes"
+@using AthleteCareLite.Core.Interfaces
+@using AthleteCareLite.Core.Models
+@inject IAthleteRepository AthleteRepo
+@rendermode InteractiveServer
+
+<PageTitle>Athletes</PageTitle>
+
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+    <h1 class="text-2xl font-bold">Athletes</h1>
+    <a href="/athletes/new" class="btn btn-primary">+ New Athlete</a>
+</div>
+
+@if (athletes is null)
+{
+    <div class="flex justify-center p-8"><span class="loading loading-spinner loading-lg"></span></div>
+}
+else if (!athletes.Any())
+{
+    <div class="alert alert-info">No athletes yet. <a href="/athletes/new" class="link">Add the first one.</a></div>
+}
+else
+{
+    <div class="overflow-x-auto rounded-lg shadow">
+        <table class="table table-zebra w-full">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>School</th>
+                    <th>Sport</th>
+                    <th>Grad Year</th>
+                    <th class="text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var athlete in athletes)
+                {
+                    <tr>
+                        <td><a href="/athletes/@athlete.AthleteId" class="link link-primary font-medium">@athlete.Name</a></td>
+                        <td>@athlete.School</td>
+                        <td><span class="badge badge-ghost">@athlete.PrimarySport</span></td>
+                        <td>@athlete.GraduationYear</td>
+                        <td class="text-right">
+                            <a href="/athletes/@athlete.AthleteId/edit" class="btn btn-xs btn-ghost">Edit</a>
+                            <button class="btn btn-xs btn-error btn-ghost" @onclick="() => DeleteAsync(athlete.AthleteId)">Delete</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    private List<Athlete>? athletes;
+
+    protected override async Task OnInitializedAsync() =>
+        athletes = await AthleteRepo.GetAllAsync();
+
+    private async Task DeleteAsync(Guid id)
+    {
+        await AthleteRepo.DeleteAsync(id);
+        athletes = await AthleteRepo.GetAllAsync();
+    }
+}

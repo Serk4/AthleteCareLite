@@ -1,0 +1,31 @@
+@page "/notes/new"
+@using AthleteCareLite.Core.Interfaces
+@using AthleteCareLite.Core.Models
+@inject ICoachNoteRepository Repo
+@inject NavigationManager Nav
+@rendermode InteractiveServer
+
+<PageTitle>New Coach Note</PageTitle>
+
+<div class="max-w-lg mx-auto">
+    <h1 class="text-2xl font-bold mb-6">New Coach Note</h1>
+    <NoteForm Note="note" OnSave="SaveAsync" CancelUrl="/notes" />
+</div>
+
+@code {
+    [SupplyParameterFromQuery] public Guid? AthleteId { get; set; }
+
+    private CoachNote note = new() { Date = DateOnly.FromDateTime(DateTime.Today) };
+
+    protected override void OnParametersSet()
+    {
+        if (AthleteId.HasValue)
+            note.AthleteId = AthleteId.Value;
+    }
+
+    private async Task SaveAsync()
+    {
+        await Repo.AddAsync(note);
+        Nav.NavigateTo("/notes");
+    }
+}

@@ -1,0 +1,36 @@
+@using AthleteCareLite.Core.Models
+
+<EditForm Model="Athlete" OnValidSubmit="OnSave" class="flex flex-col gap-4">
+    <DataAnnotationsValidator />
+
+    <div class="form-control">
+        <label class="label"><span class="label-text">Name</span></label>
+        <InputText @bind-Value="Athlete.Name" class="input input-bordered w-full" placeholder="Full name" />
+    </div>
+
+    <div class="form-control">
+        <label class="label"><span class="label-text">School</span></label>
+        <InputText @bind-Value="Athlete.School" class="input input-bordered w-full" placeholder="School name" />
+    </div>
+
+    <div class="form-control">
+        <label class="label"><span class="label-text">Primary Sport</span></label>
+        <InputText @bind-Value="Athlete.PrimarySport" class="input input-bordered w-full" placeholder="e.g. Soccer" />
+    </div>
+
+    <div class="form-control">
+        <label class="label"><span class="label-text">Graduation Year</span></label>
+        <InputNumber @bind-Value="Athlete.GraduationYear" class="input input-bordered w-full" />
+    </div>
+
+    <div class="flex gap-3 justify-end mt-2">
+        <a href="@CancelUrl" class="btn btn-ghost">Cancel</a>
+        <button type="submit" class="btn btn-primary">Save</button>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter, EditorRequired] public Athlete Athlete { get; set; } = default!;
+    [Parameter, EditorRequired] public EventCallback OnSave { get; set; }
+    [Parameter] public string CancelUrl { get; set; } = "/athletes";
+}

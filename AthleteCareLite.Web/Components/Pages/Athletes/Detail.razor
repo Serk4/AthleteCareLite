@@ -1,0 +1,115 @@
+@page "/athletes/{Id:guid}"
+@using AthleteCareLite.Core.Interfaces
+@using AthleteCareLite.Core.Models
+@inject IAthleteRepository AthleteRepo
+@rendermode InteractiveServer
+
+<PageTitle>Athlete Detail</PageTitle>
+
+@if (athlete is null)
+{
+    <div class="flex justify-center p-8"><span class="loading loading-spinner loading-lg"></span></div>
+}
+else
+{
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold">@athlete.Name</h1>
+            <p class="text-base-content/60">@athlete.School · @athlete.PrimarySport · Class of @athlete.GraduationYear</p>
+        </div>
+        <a href="/athletes/@athlete.AthleteId/edit" class="btn btn-outline btn-sm">Edit</a>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Wellness Check-Ins -->
+        <div class="card bg-base-200 shadow">
+            <div class="card-body">
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="card-title text-base">Wellness Check-Ins</h2>
+                    <a href="/wellness/new?athleteId=@athlete.AthleteId" class="btn btn-xs btn-primary">+ Add</a>
+                </div>
+                @if (!athlete.WellnessCheckIns.Any())
+                {
+                    <p class="text-sm text-base-content/50">No check-ins yet.</p>
+                }
+                else
+                {
+                    <ul class="divide-y divide-base-300 text-sm">
+                        @foreach (var w in athlete.WellnessCheckIns.OrderByDescending(x => x.Date).Take(5))
+                        {
+                            <li class="py-2 flex justify-between">
+                                <span>@w.Date.ToShortDateString()</span>
+                                <span class="flex gap-2">
+                                    <span class="badge badge-ghost">😴 @w.SleepHours h</span>
+                                    <span class="badge badge-ghost">⚡ @w.ReadinessScore</span>
+                                </span>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
+
+        <!-- Training Sessions -->
+        <div class="card bg-base-200 shadow">
+            <div class="card-body">
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="card-title text-base">Training Sessions</h2>
+                    <a href="/training/new?athleteId=@athlete.AthleteId" class="btn btn-xs btn-primary">+ Add</a>
+                </div>
+                @if (!athlete.TrainingSessions.Any())
+                {
+                    <p class="text-sm text-base-content/50">No sessions yet.</p>
+                }
+                else
+                {
+                    <ul class="divide-y divide-base-300 text-sm">
+                        @foreach (var t in athlete.TrainingSessions.OrderByDescending(x => x.Date).Take(5))
+                        {
+                            <li class="py-2 flex justify-between">
+                                <span>@t.Date.ToShortDateString()</span>
+                                <span class="badge badge-ghost">@t.Activity (@t.DurationMinutes min)</span>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
+
+        <!-- Coach Notes -->
+        <div class="card bg-base-200 shadow">
+            <div class="card-body">
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="card-title text-base">Coach Notes</h2>
+                    <a href="/notes/new?athleteId=@athlete.AthleteId" class="btn btn-xs btn-primary">+ Add</a>
+                </div>
+                @if (!athlete.CoachNotes.Any())
+                {
+                    <p class="text-sm text-base-content/50">No notes yet.</p>
+                }
+                else
+                {
+                    <ul class="divide-y divide-base-300 text-sm">
+                        @foreach (var n in athlete.CoachNotes.OrderByDescending(x => x.Date).Take(5))
+                        {
+                            <li class="py-2">
+                                <p class="font-medium">@n.Date.ToShortDateString()</p>
+                                <p class="text-base-content/70 truncate">@n.NoteText</p>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
+
+    </div>
+}
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+    private Athlete? athlete;
+
+    protected override async Task OnInitializedAsync() =>
+        athlete = await AthleteRepo.GetByIdAsync(Id);
+}

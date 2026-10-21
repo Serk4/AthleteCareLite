@@ -1,0 +1,67 @@
+@page "/training"
+@using AthleteCareLite.Core.Interfaces
+@using AthleteCareLite.Core.Models
+@inject ITrainingSessionRepository Repo
+@rendermode InteractiveServer
+
+<PageTitle>Training Sessions</PageTitle>
+
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+    <h1 class="text-2xl font-bold">Training Sessions</h1>
+    <a href="/training/new" class="btn btn-primary">+ New Session</a>
+</div>
+
+@if (sessions is null)
+{
+    <div class="flex justify-center p-8"><span class="loading loading-spinner loading-lg"></span></div>
+}
+else if (!sessions.Any())
+{
+    <div class="alert alert-info">No sessions yet.</div>
+}
+else
+{
+    <div class="overflow-x-auto rounded-lg shadow">
+        <table class="table table-zebra w-full">
+            <thead>
+                <tr>
+                    <th>Athlete</th>
+                    <th>Date</th>
+                    <th>Activity</th>
+                    <th>Duration</th>
+                    <th>Notes</th>
+                    <th class="text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var s in sessions)
+                {
+                    <tr>
+                        <td>@(s.Athlete?.Name ?? "—")</td>
+                        <td>@s.Date.ToShortDateString()</td>
+                        <td><span class="badge badge-ghost">@s.Activity</span></td>
+                        <td>@s.DurationMinutes min</td>
+                        <td class="max-w-xs truncate text-base-content/70">@s.Notes</td>
+                        <td class="text-right">
+                            <a href="/training/@s.SessionId/edit" class="btn btn-xs btn-ghost">Edit</a>
+                            <button class="btn btn-xs btn-error btn-ghost" @onclick="() => DeleteAsync(s.SessionId)">Delete</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    private List<TrainingSession>? sessions;
+
+    protected override async Task OnInitializedAsync() =>
+        sessions = await Repo.GetRecentAsync(30);
+
+    private async Task DeleteAsync(Guid id)
+    {
+        await Repo.DeleteAsync(id);
+        sessions = await Repo.GetRecentAsync(30);
+    }
+}

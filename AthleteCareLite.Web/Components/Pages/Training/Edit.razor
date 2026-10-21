@@ -1,0 +1,37 @@
+@page "/training/{Id:guid}/edit"
+@using AthleteCareLite.Core.Interfaces
+@using AthleteCareLite.Core.Models
+@inject ITrainingSessionRepository Repo
+@inject NavigationManager Nav
+@rendermode InteractiveServer
+
+<PageTitle>Edit Training Session</PageTitle>
+
+<div class="max-w-lg mx-auto">
+    <h1 class="text-2xl font-bold mb-6">Edit Training Session</h1>
+    @if (session is null)
+    {
+        <div class="flex justify-center p-8"><span class="loading loading-spinner loading-lg"></span></div>
+    }
+    else
+    {
+        <TrainingForm Session="session" OnSave="SaveAsync" CancelUrl="/training" />
+    }
+</div>
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+    private TrainingSession? session;
+
+    protected override async Task OnInitializedAsync() =>
+        session = await Repo.GetByIdAsync(Id);
+
+    private async Task SaveAsync()
+    {
+        if (session is not null)
+        {
+            await Repo.UpdateAsync(session);
+            Nav.NavigateTo("/training");
+        }
+    }
+}

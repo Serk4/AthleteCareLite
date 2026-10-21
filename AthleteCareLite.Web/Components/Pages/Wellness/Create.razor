@@ -1,0 +1,31 @@
+@page "/wellness/new"
+@using AthleteCareLite.Core.Interfaces
+@using AthleteCareLite.Core.Models
+@inject IWellnessCheckInRepository Repo
+@inject NavigationManager Nav
+@rendermode InteractiveServer
+
+<PageTitle>New Wellness Check-In</PageTitle>
+
+<div class="max-w-lg mx-auto">
+    <h1 class="text-2xl font-bold mb-6">New Wellness Check-In</h1>
+    <WellnessForm CheckIn="checkIn" OnSave="SaveAsync" CancelUrl="/wellness" />
+</div>
+
+@code {
+    [SupplyParameterFromQuery] public Guid? AthleteId { get; set; }
+
+    private WellnessCheckIn checkIn = new() { Date = DateOnly.FromDateTime(DateTime.Today) };
+
+    protected override void OnParametersSet()
+    {
+        if (AthleteId.HasValue)
+            checkIn.AthleteId = AthleteId.Value;
+    }
+
+    private async Task SaveAsync()
+    {
+        await Repo.AddAsync(checkIn);
+        Nav.NavigateTo("/wellness");
+    }
+}

@@ -1,0 +1,72 @@
+@page "/wellness"
+@using AthleteCareLite.Core.Interfaces
+@using AthleteCareLite.Core.Models
+@inject IWellnessCheckInRepository Repo
+@rendermode InteractiveServer
+
+<PageTitle>Wellness Check-Ins</PageTitle>
+
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+    <h1 class="text-2xl font-bold">Wellness Check-Ins</h1>
+    <a href="/wellness/new" class="btn btn-primary">+ New Check-In</a>
+</div>
+
+@if (checkIns is null)
+{
+    <div class="flex justify-center p-8"><span class="loading loading-spinner loading-lg"></span></div>
+}
+else if (!checkIns.Any())
+{
+    <div class="alert alert-info">No check-ins yet.</div>
+}
+else
+{
+    <div class="overflow-x-auto rounded-lg shadow">
+        <table class="table table-zebra w-full">
+            <thead>
+                <tr>
+                    <th>Athlete</th>
+                    <th>Date</th>
+                    <th>Sleep</th>
+                    <th>Soreness</th>
+                    <th>Mood</th>
+                    <th>Readiness</th>
+                    <th class="text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var c in checkIns)
+                {
+                    <tr>
+                        <td>@(c.Athlete?.Name ?? "—")</td>
+                        <td>@c.Date.ToShortDateString()</td>
+                        <td>@c.SleepHours h</td>
+                        <td><div class="badge @SorenessClass(c.SorenessLevel)">@c.SorenessLevel</div></td>
+                        <td>@c.Mood / 10</td>
+                        <td>@c.ReadinessScore / 10</td>
+                        <td class="text-right">
+                            <a href="/wellness/@c.CheckInId/edit" class="btn btn-xs btn-ghost">Edit</a>
+                            <button class="btn btn-xs btn-error btn-ghost" @onclick="() => DeleteAsync(c.CheckInId)">Delete</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    private List<WellnessCheckIn>? checkIns;
+
+    protected override async Task OnInitializedAsync() =>
+        checkIns = await Repo.GetRecentAsync(30);
+
+    private async Task DeleteAsync(Guid id)
+    {
+        await Repo.DeleteAsync(id);
+        checkIns = await Repo.GetRecentAsync(30);
+    }
+
+    private static string SorenessClass(int level) =>
+        level >= 8 ? "badge-error" : level >= 5 ? "badge-warning" : "badge-success";
+}

@@ -1,0 +1,56 @@
+@using AthleteCareLite.Core.Models
+@using AthleteCareLite.Core.Interfaces
+@inject IAthleteRepository AthleteRepo
+
+<EditForm Model="Session" OnValidSubmit="OnSave" class="flex flex-col gap-4">
+    <DataAnnotationsValidator />
+
+    <div class="form-control">
+        <label class="label"><span class="label-text">Athlete</span></label>
+        <InputSelect @bind-Value="Session.AthleteId" class="select select-bordered w-full">
+            <option value="">— Select Athlete —</option>
+            @foreach (var a in athletes)
+            {
+                <option value="@a.AthleteId">@a.Name</option>
+            }
+        </InputSelect>
+    </div>
+
+    <div class="form-control">
+        <label class="label"><span class="label-text">Date</span></label>
+        <input type="date" class="input input-bordered w-full"
+               value="@Session.Date.ToString("yyyy-MM-dd")"
+               @onchange="e => Session.Date = DateOnly.Parse(e.Value!.ToString()!)" />
+    </div>
+
+    <div class="form-control">
+        <label class="label"><span class="label-text">Activity</span></label>
+        <InputText @bind-Value="Session.Activity" class="input input-bordered w-full" placeholder="e.g. Strength Training" />
+    </div>
+
+    <div class="form-control">
+        <label class="label"><span class="label-text">Duration (minutes)</span></label>
+        <InputNumber @bind-Value="Session.DurationMinutes" class="input input-bordered w-full" min="1" />
+    </div>
+
+    <div class="form-control">
+        <label class="label"><span class="label-text">Notes</span></label>
+        <InputTextArea @bind-Value="Session.Notes" class="textarea textarea-bordered w-full" rows="3" placeholder="Optional notes" />
+    </div>
+
+    <div class="flex gap-3 justify-end mt-2">
+        <a href="@CancelUrl" class="btn btn-ghost">Cancel</a>
+        <button type="submit" class="btn btn-primary">Save</button>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter, EditorRequired] public TrainingSession Session { get; set; } = default!;
+    [Parameter, EditorRequired] public EventCallback OnSave { get; set; }
+    [Parameter] public string CancelUrl { get; set; } = "/training";
+
+    private List<Athlete> athletes = [];
+
+    protected override async Task OnInitializedAsync() =>
+        athletes = await AthleteRepo.GetAllAsync();
+}

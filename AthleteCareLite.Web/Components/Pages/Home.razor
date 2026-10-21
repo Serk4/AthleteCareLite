@@ -1,0 +1,140 @@
+﻿@page "/"
+@using AthleteCareLite.Core.Interfaces
+@using AthleteCareLite.Core.Models
+@inject IAthleteRepository AthleteRepo
+@inject IWellnessCheckInRepository WellnessRepo
+@inject ITrainingSessionRepository TrainingRepo
+@rendermode InteractiveServer
+
+<PageTitle>Dashboard — AthleteCareLite</PageTitle>
+
+<h1 class="text-2xl font-bold mb-1">Dashboard</h1>
+<p class="text-base-content/60 mb-6">Last 7 days of activity</p>
+
+<!-- Stat cards -->
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+    <div class="stat bg-base-200 rounded-xl shadow">
+        <div class="stat-title">Total Athletes</div>
+        <div class="stat-value text-primary">@(athletes?.Count ?? 0)</div>
+        <div class="stat-desc"><a href="/athletes" class="link">View all</a></div>
+    </div>
+    <div class="stat bg-base-200 rounded-xl shadow">
+        <div class="stat-title">Check-Ins (7d)</div>
+        <div class="stat-value text-secondary">@(recentCheckIns?.Count ?? 0)</div>
+        <div class="stat-desc"><a href="/wellness" class="link">View all</a></div>
+    </div>
+    <div class="stat bg-base-200 rounded-xl shadow">
+        <div class="stat-title">Sessions (7d)</div>
+        <div class="stat-value text-accent">@(recentSessions?.Count ?? 0)</div>
+        <div class="stat-desc"><a href="/training" class="link">View all</a></div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+    <!-- Recent Wellness -->
+    <div class="card bg-base-200 shadow">
+        <div class="card-body">
+            <div class="flex justify-between items-center mb-3">
+                <h2 class="card-title">Recent Wellness Check-Ins</h2>
+                <a href="/wellness/new" class="btn btn-xs btn-primary">+ Add</a>
+            </div>
+            @if (recentCheckIns is null)
+            {
+                <span class="loading loading-spinner"></span>
+            }
+            else if (!recentCheckIns.Any())
+            {
+                <p class="text-sm text-base-content/50">No check-ins in the last 7 days.</p>
+            }
+            else
+            {
+                <ul class="divide-y divide-base-300 text-sm">
+                    @foreach (var c in recentCheckIns.Take(8))
+                    {
+                        <li class="py-2 flex justify-between items-center">
+                            <div>
+                                <span class="font-medium">@(c.Athlete?.Name ?? "—")</span>
+                                <span class="text-base-content/50 ml-2">@c.Date.ToShortDateString()</span>
+                            </div>
+                            <div class="flex gap-2">
+                                <span class="badge badge-ghost">😴 @c.SleepHours h</span>
+                                <span class="badge badge-ghost">⚡ @c.ReadinessScore</span>
+                            </div>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    </div>
+
+    <!-- Recent Training -->
+    <div class="card bg-base-200 shadow">
+        <div class="card-body">
+            <div class="flex justify-between items-center mb-3">
+                <h2 class="card-title">Recent Training Sessions</h2>
+                <a href="/training/new" class="btn btn-xs btn-primary">+ Add</a>
+            </div>
+            @if (recentSessions is null)
+            {
+                <span class="loading loading-spinner"></span>
+            }
+            else if (!recentSessions.Any())
+            {
+                <p class="text-sm text-base-content/50">No sessions in the last 7 days.</p>
+            }
+            else
+            {
+                <ul class="divide-y divide-base-300 text-sm">
+                    @foreach (var s in recentSessions.Take(8))
+                    {
+                        <li class="py-2 flex justify-between items-center">
+                            <div>
+                                <span class="font-medium">@(s.Athlete?.Name ?? "—")</span>
+                                <span class="text-base-content/50 ml-2">@s.Date.ToShortDateString()</span>
+                            </div>
+                            <span class="badge badge-ghost">@s.Activity · @s.DurationMinutes min</span>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    </div>
+
+</div>
+
+<!-- Quick links: Athletes -->
+<div class="mt-8">
+    <h2 class="text-lg font-semibold mb-3">Athletes</h2>
+    @if (athletes is null)
+    {
+        <span class="loading loading-spinner"></span>
+    }
+    else if (!athletes.Any())
+    {
+        <div class="alert alert-info">No athletes yet. <a href="/athletes/new" class="link">Add one.</a></div>
+    }
+    else
+    {
+        <div class="flex flex-wrap gap-3">
+            @foreach (var a in athletes)
+            {
+                <a href="/athletes/@a.AthleteId" class="btn btn-outline btn-sm">@a.Name</a>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<Athlete>? athletes;
+    private List<WellnessCheckIn>? recentCheckIns;
+    private List<TrainingSession>? recentSessions;
+
+    protected override async Task OnInitializedAsync()
+    {
+        athletes = await AthleteRepo.GetAllAsync();
+        recentCheckIns = await WellnessRepo.GetRecentAsync(7);
+        recentSessions = await TrainingRepo.GetRecentAsync(7);
+    }
+}
+

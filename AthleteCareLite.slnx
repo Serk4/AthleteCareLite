@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="AthleteCareLite.Core/AthleteCareLite.Core.csproj" />
+  <Project Path="AthleteCareLite.Infrastructure/AthleteCareLite.Infrastructure.csproj" />
+  <Project Path="AthleteCareLite.Web/AthleteCareLite.Web.csproj" />
+</Solution>

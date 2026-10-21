@@ -1,0 +1,23 @@
+@page "/athletes/new"
+@using AthleteCareLite.Core.Interfaces
+@using AthleteCareLite.Core.Models
+@inject IAthleteRepository AthleteRepo
+@inject NavigationManager Nav
+@rendermode InteractiveServer
+
+<PageTitle>New Athlete</PageTitle>
+
+<div class="max-w-lg mx-auto">
+    <h1 class="text-2xl font-bold mb-6">New Athlete</h1>
+    <AthleteForm Athlete="athlete" OnSave="SaveAsync" CancelUrl="/athletes" />
+</div>
+
+@code {
+    private Athlete athlete = new();
+
+    private async Task SaveAsync()
+    {
+        await AthleteRepo.AddAsync(athlete);
+        Nav.NavigateTo("/athletes");
+    }
+}

@@ -1,0 +1,37 @@
+@page "/wellness/{Id:guid}/edit"
+@using AthleteCareLite.Core.Interfaces
+@using AthleteCareLite.Core.Models
+@inject IWellnessCheckInRepository Repo
+@inject NavigationManager Nav
+@rendermode InteractiveServer
+
+<PageTitle>Edit Wellness Check-In</PageTitle>
+
+<div class="max-w-lg mx-auto">
+    <h1 class="text-2xl font-bold mb-6">Edit Wellness Check-In</h1>
+    @if (checkIn is null)
+    {
+        <div class="flex justify-center p-8"><span class="loading loading-spinner loading-lg"></span></div>
+    }
+    else
+    {
+        <WellnessForm CheckIn="checkIn" OnSave="SaveAsync" CancelUrl="/wellness" />
+    }
+</div>
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+    private WellnessCheckIn? checkIn;
+
+    protected override async Task OnInitializedAsync() =>
+        checkIn = await Repo.GetByIdAsync(Id);
+
+    private async Task SaveAsync()
+    {
+        if (checkIn is not null)
+        {
+            await Repo.UpdateAsync(checkIn);
+            Nav.NavigateTo("/wellness");
+        }
+    }
+}

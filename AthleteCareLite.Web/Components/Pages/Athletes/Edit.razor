@@ -1,0 +1,38 @@
+@page "/athletes/{Id:guid}/edit"
+@using AthleteCareLite.Core.Interfaces
+@using AthleteCareLite.Core.Models
+@inject IAthleteRepository AthleteRepo
+@inject NavigationManager Nav
+@rendermode InteractiveServer
+
+<PageTitle>Edit Athlete</PageTitle>
+
+<div class="max-w-lg mx-auto">
+    <h1 class="text-2xl font-bold mb-6">Edit Athlete</h1>
+
+    @if (athlete is null)
+    {
+        <div class="flex justify-center p-8"><span class="loading loading-spinner loading-lg"></span></div>
+    }
+    else
+    {
+        <AthleteForm Athlete="athlete" OnSave="SaveAsync" CancelUrl="/athletes" />
+    }
+</div>
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+    private Athlete? athlete;
+
+    protected override async Task OnInitializedAsync() =>
+        athlete = await AthleteRepo.GetByIdAsync(Id);
+
+    private async Task SaveAsync()
+    {
+        if (athlete is not null)
+        {
+            await AthleteRepo.UpdateAsync(athlete);
+            Nav.NavigateTo("/athletes");
+        }
+    }
+}

@@ -1,0 +1,37 @@
+@page "/notes/{Id:guid}/edit"
+@using AthleteCareLite.Core.Interfaces
+@using AthleteCareLite.Core.Models
+@inject ICoachNoteRepository Repo
+@inject NavigationManager Nav
+@rendermode InteractiveServer
+
+<PageTitle>Edit Coach Note</PageTitle>
+
+<div class="max-w-lg mx-auto">
+    <h1 class="text-2xl font-bold mb-6">Edit Coach Note</h1>
+    @if (note is null)
+    {
+        <div class="flex justify-center p-8"><span class="loading loading-spinner loading-lg"></span></div>
+    }
+    else
+    {
+        <NoteForm Note="note" OnSave="SaveAsync" CancelUrl="/notes" />
+    }
+</div>
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+    private CoachNote? note;
+
+    protected override async Task OnInitializedAsync() =>
+        note = await Repo.GetByIdAsync(Id);
+
+    private async Task SaveAsync()
+    {
+        if (note is not null)
+        {
+            await Repo.UpdateAsync(note);
+            Nav.NavigateTo("/notes");
+        }
+    }
+}
