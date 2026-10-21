@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AthleteCareLite.Infrastructure")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3f5c294375d4f8a09087d704e5c04265f832c64d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8cf0aebfa0d38186d6f1d8c729c0e60edc1339ae")]
 [assembly: System.Reflection.AssemblyProductAttribute("AthleteCareLite.Infrastructure")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AthleteCareLite.Infrastructure")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
