@@ -1,12 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "T3kwNWRStXo=",
+  "dgSpecHash": "h7ALQGUeW08=",
   "success": true,
-  "projectFilePath": "C:\\Users\\david\\source\\repos\\Serk4\\AthleteCareLite\\AthleteCareLite.Core\\AthleteCareLite.Core.csproj",
-  "expectedPackageFiles": [
-    "C:\\Users\\david\\.nuget\\packages\\microsoft.netcore.app.ref\\9.0.21\\microsoft.netcore.app.ref.9.0.21.nupkg.sha512",
-    "C:\\Users\\david\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\9.0.21\\microsoft.windowsdesktop.app.ref.9.0.21.nupkg.sha512",
-    "C:\\Users\\david\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\9.0.21\\microsoft.aspnetcore.app.ref.9.0.21.nupkg.sha512"
-  ],
+  "projectFilePath": "/home/runner/work/AthleteCareLite/AthleteCareLite/AthleteCareLite.Core/AthleteCareLite.Core.csproj",
+  "expectedPackageFiles": [],
   "logs": []
 }
